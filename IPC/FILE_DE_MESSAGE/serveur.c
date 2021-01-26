@@ -25,21 +25,16 @@ key_t cle; /* cle de la file     */
 //int continuer_boucle = 1;
 
 void arret(int s){
-	
-	/* Recuperation de la file */
-  if((file_mess = msgget(cle, 0)) == -1) {
-    perror("Erreur lors de la recuperation de la file ");
-    exit(EXIT_FAILURE);
-  }
- 
   /* Suppression de la file */
-  if(msgctl(file_mess, IPC_RMID, 0) == -1) {
+	
+
+  if(msgctl(file_mess, IPC_RMID, NULL) == -1) {
     perror("Erreur lors de la suppression de la file ");
     exit(EXIT_FAILURE);
   }
+ 	printf("File supprimee.\n");
  
-  printf("File supprimee.\n");
-  exit(0);
+  	exit(EXIT_SUCCESS);
 
 }
 
@@ -68,7 +63,6 @@ int effectuer(char op, int g, int d){
 			return g%d;
 	}
 }
-
 int main (int argc, char *argv[]){
 	requete_t requete;
 	reponse_t reponse;
@@ -76,14 +70,17 @@ int main (int argc, char *argv[]){
 
 	/* cacul de la cle de la file    */
 	cle = ftok(FICHIER_CLE,'a');
-//    cle = ftok(getenv("HOME"),'A');
+
 
 	assert(cle != -1);
 
 	/* Creation file de message :    */
 
-	file_mess = msgget(cle,IPC_CREAT);
-	printf("%d",file_mess);
+	file_mess = msgget(cle,0666|IPC_CREAT);
+	requete.type = 1;
+	printf("file_mess = %d \n",file_mess);
+	//sleep(10);
+	
 	assert( file_mess != -1);
 
 	assert(set_signal_handler(SIGINT,arret) == 0);
@@ -94,12 +91,13 @@ int main (int argc, char *argv[]){
 	while(1){ 
 
 		/* serveur attend des requetes, de type 1 :        */
+		printf("Attente...\n");
 	 	
-		/*if (*/msgrcv(file_mess,&requete, sizeof(requete_t) - sizeof(long), 1,0); //== -1 )
-		//{
-	//		perror("Erreur lors de la reception...");
-//			exit(-1);
-//		}
+		if (msgrcv(file_mess,&requete, sizeof(requete_t) - sizeof(long), 1,0)== -1 )
+		{
+			perror("Erreur lors de la reception...");
+			exit(-1);
+		}
 		
 		printf("Serveur : Reception en attente...\n");
 		/* traitement de la requete :                      */
@@ -111,7 +109,7 @@ int main (int argc, char *argv[]){
 		sleep(5);
 
 		/* envoi de la reponse :                           */
-		msgsnd(file_mess,(const void*)&reponse, sizeof(reponse_t) - sizeof(long),0);
+		msgsnd(file_mess,&reponse, sizeof(reponse_t) - sizeof(long),IPC_NOWAIT);
 		printf("Reponse du serveur envoyé ! \n");
 	}
 

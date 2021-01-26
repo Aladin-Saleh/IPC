@@ -51,7 +51,7 @@ int main (int argc, char *argv[]){
 
 	/* Calcul de la cle	                 */
 	cle = ftok(FICHIER_CLE,'a');
-    //cle = ftok(getenv("HOME"),'A');
+    
 	
 	assert(cle != -1);
 	
@@ -73,23 +73,23 @@ int main (int argc, char *argv[]){
 
 	/* envoi de la requete :             */
 
-	msgsnd(file_mess,(const void *)&requete,sizeof(requete_t),0);// == -1)
-	//{
-	//	perror("Erreur lors de l'envoi de la requete !");
-	//	exit(-1);
-	//}
-	
-
-	/* attente de la reponse :           */
-	msgrcv(file_mess,&reponse,sizeof(reponse_t)-sizeof(long),1,0);
-	/*
-	if (msgrcv(file_mess,&reponse,sizeof(reponse_t)-sizeof(long),1,0) == -1)
+	if(msgsnd(file_mess,&requete,sizeof(requete_t)-sizeof(long),0) == -1)
 	{
-		perror("Erreur lors de la recuperation de la reponse !");
+		perror("Erreur lors de l'envoi de la requete ");
 		exit(-1);
 	}
 	
-*/
+
+	/* attente de la reponse :           */
+	
+	reponse.type = getpid();
+	if (msgrcv(file_mess,&reponse,sizeof(reponse_t)-sizeof(long),reponse.type,0) == -1)
+	{
+		perror("Erreur lors de la recuperation de la reponse ");
+		exit(-1);
+	}
+	
+
 	/* affichage de la reponse           */
 
 	printf("Resultat : %d\n",reponse.resu);
