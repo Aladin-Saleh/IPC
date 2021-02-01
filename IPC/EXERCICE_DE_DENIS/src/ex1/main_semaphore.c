@@ -78,8 +78,10 @@ int main(int argc, char const *argv[])
 
 	key_t cle;
 	union semun u;
-	int smid;
+	char buf[256];
+	int smid,shmid;
 	int pid;
+	int *count;
 
 
 	if ((cle = ftok("/tmp",1)) == -1)
@@ -91,6 +93,13 @@ int main(int argc, char const *argv[])
 	{
 		erreur("Erreur lors de la creation de la semaphore...");
 	}
+	shmid=shmget(cle, sizeof(int), IPC_CREAT|0666);
+	assert(shmid >= 0);
+
+	count = (int*)shmat(shmid,NULL,0);
+	assert(count != (void*)-1);
+
+	*count = 0;
 
 	u.val = 1;
 
@@ -99,36 +108,39 @@ int main(int argc, char const *argv[])
         erreur("Erreur semclt....");
     }
 
-    if ((pid = fork()) < 0)
-    {
-    	erreur("Erreur lors de la creation du fils...");
-    }
-    else
-    {
-    	char* s = "abcdefgh";
-    	int length = strlen(s);
+ 
+		for(int i = 1; i < 6; ++i)
+        {
+            if(semop(smid, &p, 1) < 0)
+            {
+                perror("semop p"); exit(15);
+            }
+    		pid_t p = fork();
+			assert( p != -1);
 
-    	for (int i = 0; i < length; ++i)
-    	{
-    		if (semop(smid,&p,))
-    		{
-    			/* code */
-    		}
-    	}
-    }
+			if (p==0) {
+			snprintf(buf,sizeof(buf),"%d",i);
+			execl("./incr","./incr",buf,NULL);
+			assert(0);//Pas censé arriver ici
+			}
 
+			
+            if(semop(smid, &v, 1) < 0)
+            {
+                perror("semop p"); exit(16);
+            }
 
+            sleep(rand() % 2);
+        }
+	
+	
 
+	for (int i=1;i<=6;i++) wait(NULL);
 
-
-
-
-
-
-
+	printf("count = %d\n",*count);
+	assert(shmctl(shmid,IPC_RMID,0) >=0);
 	return 0;
 }
-
 
 
 void erreur(char* texte)
