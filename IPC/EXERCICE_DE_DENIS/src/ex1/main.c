@@ -11,7 +11,9 @@
 int main(int argc,char * argv[])
 {
 	int shmid,i,*count;
+
 	char buf[256];
+	//struct sembuf sops[2];
 
 
 	key_t k = ftok("/tmp",1);
@@ -25,7 +27,7 @@ int main(int argc,char * argv[])
 
 	*count = 0;
 
-	for (i=1;i<=10;i++){
+	for (i=1;i<=5;i++){
 		pid_t p = fork();
 		assert( p != -1);
 
@@ -36,7 +38,7 @@ int main(int argc,char * argv[])
 		}
 	}
 
-	for (i=1;i<=10;i++) wait(NULL);
+	for (i=1;i<=5;i++) wait(NULL);
 
 	printf("count = %d\n",*count);
 	assert(shmctl(shmid,IPC_RMID,0) >=0);

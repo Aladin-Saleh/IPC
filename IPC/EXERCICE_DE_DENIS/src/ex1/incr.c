@@ -16,7 +16,6 @@ int main(int argc, char const *argv[])
     key_t cle;
     int id;
     int *count;
-    char * endPtr;
 
     cle = ftok("/tmp",1);
     assert(cle != -1);
@@ -30,9 +29,21 @@ int main(int argc, char const *argv[])
 
     count = (int*)shmat(id,NULL,0);
     assert(count != (void*)-1);
-    *count = strtol(argv[1],&endPtr,10 )+ (*count)++;
+    
+    int pas = strtol(argv[1],0,10);
+    for (int i = 0; i < 10000; ++i)
+    {
+        (*count) += pas;
+    }
+
     printf("recu: %d\n----------\n",*count);
 
+
+    /*
+    *Ici, comme tout les processus on acces à la variable count, il y'a des erreurs d'incrementation
+    *Il faut utiliser des sémaphores pour rendre atomique l'utilisation de la variable partagées count 
+    *On est supposé avoir un count egale à 150 000 si tout c'est bien passé
+    */
 
 
 

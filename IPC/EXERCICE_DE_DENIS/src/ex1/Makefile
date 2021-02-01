@@ -1,6 +1,9 @@
 CC = gcc -Wall 
 
-all : main incr
+all : main incr main_semaphore
+
+main_semaphore : main_semaphore.c
+	$(CC) main_semaphore.c -o main_semaphore
 
 incr : incr.c 
 	$(CC) incr.c -o incr
