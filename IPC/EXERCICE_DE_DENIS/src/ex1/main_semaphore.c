@@ -93,6 +93,7 @@ int main(int argc, char const *argv[])
 	{
 		erreur("Erreur lors de la creation de la semaphore...");
 	}
+	
 	shmid=shmget(cle, sizeof(int), IPC_CREAT|0666);
 	assert(shmid >= 0);
 
