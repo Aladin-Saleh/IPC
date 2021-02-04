@@ -12,4 +12,4 @@ main : main.c
 	$(CC) main.c -o main
 
 clean :
-	rm -f incr main
+	rm -f incr main main_semaphore

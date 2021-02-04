@@ -80,7 +80,7 @@ int main(int argc, char const *argv[])
 	union semun u;
 	char buf[256];
 	int smid,shmid;
-	int pid;
+	
 	int *count;
 
 
@@ -111,24 +111,17 @@ int main(int argc, char const *argv[])
  
 		for(int i = 1; i < 6; ++i)
         {
-            if(semop(smid, &p, 1) < 0)
-            {
-                perror("semop p"); exit(15);
-            }
-    		pid_t p = fork();
-			assert( p != -1);
+            
+    		pid_t pid = fork();
+			assert( pid != -1);
 
-			if (p==0) {
+			if (pid==0) {
 			snprintf(buf,sizeof(buf),"%d",i);
 			execl("./incr","./incr",buf,NULL);
 			assert(0);//Pas censé arriver ici
 			}
 
 			
-            if(semop(smid, &v, 1) < 0)
-            {
-                perror("semop p"); exit(16);
-            }
 
             sleep(rand() % 2);
         }
